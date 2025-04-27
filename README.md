@@ -2,6 +2,21 @@
 
 > A simple Homebridge plugin to remotely list and control your HomeKit devices over the internet via a secure API key.
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/homebridge-linky">
+    <img alt="npm" src="https://img.shields.io/npm/v/homebridge-linky">
+  </a>
+  <a href="https://github.com/oorrwullie/homebridge-linky/blob/main/LICENSE">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  </a>
+  <a href="https://nodejs.org/en/">
+    <img alt="Node.js Version" src="https://img.shields.io/node/v/homebridge-linky">
+  </a>
+  <a href="https://github.com/oorrwullie/homebridge-linky/actions/workflows/publish.yml">
+    <img alt="Build Status" src="https://github.com/oorrwullie/homebridge-linky/actions/workflows/publish.yml/badge.svg">
+  </a>
+</p>
+
 ---
 
 ## Features
