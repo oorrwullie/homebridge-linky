@@ -1,15 +1,15 @@
-import crypto from 'crypto';
-import axios from 'axios';
-import { API, DynamicPlatformPlugin, Logger, PlatformConfig, PlatformAccessory } from 'homebridge';
+import { API, DynamicPlatformPlugin, Logger, Logging, PlatformConfig } from 'homebridge';
+import { startServer } from './server';
 import { wrapLogger } from './utils/logger';
 import { initializeDevices } from './utils/deviceManager';
-import { startServer } from './server';
 import { generateApiKey } from './utils/auth';
+import axios from 'axios';
+import crypto from 'crypto';
 
 export class LinkyPlatform implements DynamicPlatformPlugin {
-  private readonly log: ReturnType<typeof wrapLogger>;
   private readonly api: API;
-  private readonly config: PlatformConfig;
+  readonly config: PlatformConfig;
+  private readonly log: ReturnType<typeof wrapLogger>;
   private apiKey: string;
   private rotateKeySecret: string;
 
@@ -28,23 +28,33 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     this.api.on('didFinishLaunching', () => {
       this.log.info('Linky Plugin finished launching');
       initializeDevices(this.api);
-      startServer(this, this.log, this.config.port || 8081);
+
+      startServer(
+        {
+          config: { port: this.config.port },
+          getApiKey: this.getApiKey.bind(this),
+          getRotateKeySecret: this.getRotateKeySecret.bind(this),
+          rotateApiKey: this.rotateApiKey.bind(this),
+        },
+        log as unknown as Logging, // ✅ Cast Logger to Logging
+        this.config.port || 8081
+      );
     });
   }
 
-  private generateRotateKeySecret(): string {
-    return crypto.randomBytes(32).toString('hex');
+  generateRotateKeySecret(): string {
+    return crypto.randomBytes(32).toString('hex'); // 64-character secure random hex
   }
 
-  public getApiKey(): string {
+  getApiKey(): string {
     return this.apiKey;
   }
 
-  public getRotateKeySecret(): string {
+  getRotateKeySecret(): string {
     return this.rotateKeySecret;
   }
 
-  public async rotateApiKey(): Promise<string> {
+  async rotateApiKey(): Promise<string> {
     const newKey = generateApiKey();
     this.apiKey = newKey;
     this.log.warn('API key rotated dynamically.');
@@ -53,7 +63,7 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     return newKey;
   }
 
-  private async saveApiKeyToConfig(newKey: string): Promise<void> {
+  async saveApiKeyToConfig(newKey: string) {
     try {
       await axios.put(
         'http://localhost:8581/api/config-editor/save',
@@ -74,8 +84,7 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  configureAccessory(_accessory: PlatformAccessory): void {
-    // No-op
+  configureAccessory() {
+    // No-op for Homebridge
   }
 }

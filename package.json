@@ -9,6 +9,7 @@
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "build:scripts": "tsc scripts/generate-release-notes.ts --outDir dist/scripts",
+    "prepublishOnly": "npm run build",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",

@@ -1,6 +1,6 @@
-import { Logging } from 'homebridge';
+import { Logger } from 'homebridge';
 
-export function wrapLogger(log: Logging) {
+export function wrapLogger(log: Logger) {
   return {
     info: (msg: string, ...args: unknown[]) => log.info('[Linky]', msg, ...args),
     warn: (msg: string, ...args: unknown[]) => log.warn('[Linky]', msg, ...args),

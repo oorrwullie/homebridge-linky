@@ -1,4 +1,11 @@
-import { API, PlatformAccessory, Service, Characteristic, CharacteristicValue } from 'homebridge';
+import {
+  API,
+  PlatformAccessory,
+  Service,
+  Characteristic,
+  Perms,
+  CharacteristicValue,
+} from 'homebridge';
 import { DeviceError } from './error';
 import { DeviceStateRecord } from '../types';
 
@@ -33,7 +40,7 @@ export function listDevices() {
       serviceType: service.UUID,
       characteristics: service.characteristics.map((char: Characteristic) => ({
         type: char.displayName,
-        writable: char.props.perms.includes('pw' as unknown as string), // handle types safely
+        writable: char.props.perms.includes('pw' as Perms),
       })),
     }));
 

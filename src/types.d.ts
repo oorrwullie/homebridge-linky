@@ -2,6 +2,7 @@ export interface LinkyPlatformContext {
   config: {
     port?: number;
   };
+  getApiKey: () => string;
   getRotateKeySecret: () => string;
   rotateApiKey: () => Promise<string>;
 }
