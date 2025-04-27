@@ -27,9 +27,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump patch version locally
+      - name: Bump patch version safely
         id: version_bump
         run: |
+          git fetch --tags
+          LATEST_TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
           VERSION=$(npm version patch --no-git-tag-version)
           VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -38,13 +41,13 @@ jobs:
           git add package.json package-lock.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
 
-      - name: Push new tag
+      - name: Push new version tag
         run: |
           git tag "v${{ env.VERSION }}"
           git push origin "v${{ env.VERSION }}"
 
       - name: Build scripts
-        run: tsc src/scripts/generate-release-notes.ts --outDir dist/scripts
+        run: npm run build:scripts
 
       - name: Generate Release Notes using ChatGPT
         run: node dist/scripts/generate-release-notes.js
