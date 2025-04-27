@@ -140,3 +140,18 @@ npm publish
 ## License
 
 MIT © 2025 [oorrwullie](https://github.com/oorrwullie)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community!
+Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
+
+## 🛡️ Code of Conduct
+
+We expect all contributors to follow our [Code of Conduct](./.github/CODE_OF_CONDUCT.md) to foster a welcoming environment.
+
+## 🔒 Security
+
+If you discover a vulnerability, please follow our [Security Policy](./.github/SECURITY.md) for responsible disclosure.
