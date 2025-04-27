@@ -1,12 +1,9 @@
-name: Publish to NPM and GitHub Release 🚀
+name: Publish to NPM and GitHub Release
 
 on:
   push:
     branches:
       - main
-
-permissions:
-  contents: write
 
 jobs:
   release:
@@ -25,21 +22,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump minor version
+      - name: Bump minor version locally
         id: version_bump
         run: |
           VERSION=$(npm version minor --no-git-tag-version)
-          VERSION=${VERSION#v} # remove leading v if any
+          VERSION=${VERSION#v}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add package.json package-lock.json
-          git commit -m "chore: bump version to $VERSION 🚀"
-          git tag "v$VERSION"
-          git push origin main --tags
+          git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
 
-      - name: Build project
-        run: npm run build
+      - name: Push new tag
+        run: |
+          git tag "v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Build scripts
+        run: npm run build:scripts
 
       - name: Generate Release Notes using ChatGPT
         run: node dist/scripts/generate-release-notes.js
@@ -57,8 +57,3 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: v${{ env.VERSION }}
           body_path: RELEASE_NOTES.md
-
-      - name: Cleanup version bump if needed
-        if: always()
-        run: |
-          git restore package.json package-lock.json
