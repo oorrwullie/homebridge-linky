@@ -155,3 +155,9 @@ We expect all contributors to follow our [Code of Conduct](./.github/CODE_OF_CON
 ## 🔒 Security
 
 If you discover a vulnerability, please follow our [Security Policy](./.github/SECURITY.md) for responsible disclosure.
+
+## 🙌 Contributors
+
+Thanks to these amazing people for helping improve Linky!
+
+[![Contributors](https://img.shields.io/github/contributors/oorrwullie/homebridge-linky?color=blue&style=flat-square)](https://github.com/oorrwullie/homebridge-linky/graphs/contributors)
