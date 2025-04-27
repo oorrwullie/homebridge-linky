@@ -2,6 +2,21 @@
 
 > A simple Homebridge plugin to remotely list and control your HomeKit devices over the internet via a secure API key.
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/homebridge-linky">
+    <img alt="npm" src="https://img.shields.io/npm/v/homebridge-linky">
+  </a>
+  <a href="https://github.com/oorrwullie/homebridge-linky/blob/main/LICENSE">
+    <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  </a>
+  <a href="https://nodejs.org/en/">
+    <img alt="Node.js Version" src="https://img.shields.io/node/v/homebridge-linky">
+  </a>
+  <a href="https://github.com/oorrwullie/homebridge-linky/actions/workflows/publish.yml">
+    <img alt="Build Status" src="https://github.com/oorrwullie/homebridge-linky/actions/workflows/publish.yml/badge.svg">
+  </a>
+</p>
+
 ---
 
 ## Features
@@ -125,3 +140,24 @@ npm publish
 ## License
 
 MIT © 2025 [oorrwullie](https://github.com/oorrwullie)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community!
+Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
+
+## 🛡️ Code of Conduct
+
+We expect all contributors to follow our [Code of Conduct](./.github/CODE_OF_CONDUCT.md) to foster a welcoming environment.
+
+## 🔒 Security
+
+If you discover a vulnerability, please follow our [Security Policy](./.github/SECURITY.md) for responsible disclosure.
+
+## 🙌 Contributors
+
+Thanks to these amazing people for helping improve Linky!
+
+[![Contributors](https://img.shields.io/github/contributors/oorrwullie/homebridge-linky?color=blue&style=flat-square)](https://github.com/oorrwullie/homebridge-linky/graphs/contributors)
