@@ -1,6 +1,6 @@
 {
   "name": "homebridge-linky",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple API server to control HomeKit devices remotely via Homebridge.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
