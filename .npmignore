@@ -1,0 +1,33 @@
+# Ignore everything except compiled dist/ output
+/src
+/scripts
+/patches
+/node_modules
+/.husky
+/.github
+/.vscode
+/test
+/tsconfig.json
+/tsconfig.build.json
+/tslint.json
+/package-lock.json
+/patches
+/README.md
+/.eslintrc
+/.eslint*
+/.prettier*
+.prettierrc
+.prettierignore
+/lint-staged.config.js
+/npm-debug.log
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# Ignore build artifacts
+dist/scripts/generate-release-notes.js.map
+
+# Ignore everything development-specific
+.idea
+*.iml
