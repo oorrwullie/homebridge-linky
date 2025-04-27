@@ -1,173 +1,127 @@
 # Linky
 
-![Homebridge](https://img.shields.io/badge/homebridge-plugin-blueviolet)
-![npm](https://img.shields.io/npm/v/homebridge-linky)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-Linky is a simple, fast, and secure API server for controlling HomeKit devices remotely via Homebridge.
-
-Built with performance and safety in mind, Linky exposes a lightweight REST API with dynamic key rotation, device state monitoring, metrics, and future WebSocket support.
+> A simple Homebridge plugin to remotely list and control your HomeKit devices over the internet via a secure API key.
 
 ---
 
-## ✨ Features
+## Features
 
-- Full device listing and state reporting
-- Device control (on/off/set characteristics)
-- REST API secured by an API key
-- Dynamic API key rotation via Homebridge UI
-- Health checks and Prometheus-compatible metrics
-- Fastify server optimized for embedded use
-- Future WebSocket support planned
-- Built with TypeScript and modern tooling
+- 📋 List all HomeKit devices with metadata
+- 🔄 Get real-time device states
+- 🎛️ Control devices (On/Off/Set characteristics)
+- 🔐 API Key authentication (secure and rotatable)
+- 📊 Built-in `/metrics` Prometheus endpoint
+- 📡 Auto-detects device reachability and status
+- ⚡ Fully configurable inside Homebridge UI
+- 🚀 Fully automated GitHub Actions release pipeline (with ChatGPT Release Notes!)
 
 ---
 
-## 🚀 Installation
-
-Install Linky alongside your existing Homebridge setup.
+## Installation
 
 ```bash
 npm install -g homebridge-linky
 ```
 
-Add Linky to your Homebridge config:
+---
 
-```json
-{
-  "platforms": [
-    {
-      "platform": "Linky",
-      "name": "Linky",
-      "apiKey": "<your-secure-api-key>",
-      "port": 8581
-    }
-  ]
-}
-```
+## Configuration (inside Homebridge UI)
 
-**Notes:**
-- If no `apiKey` is specified, Linky will generate a random secure key on startup.
-- API access is secured using the API key provided in HTTP headers.
+| Field | Description |
+|:------|:------------|
+| `port` | Port the Linky server listens on (default: 8081) |
+| `apiKey` | (Optional) Predefined API key. If blank, a secure random key is generated. |
 
 ---
 
-## 🔒 Authentication
+## API Reference
 
-All API requests must include:
+All API requests require the header:
 
 ```http
-x-linky-key: <your-api-key>
+x-linky-key: YOUR_API_KEY
 ```
 
-For admin actions like rotating the API key, use:
-
-```http
-x-linky-admin: <rotate-key-secret>
-```
-
-Rotate-key-secret is auto-generated and retrievable from `/rotate-key-secret`.
+| Endpoint | Method | Description |
+|:---------|:-------|:------------|
+| `/` | `GET` | Welcome route with Linky status |
+| `/healthz` | `GET` | Health check route |
+| `/metrics` | `GET` | Prometheus-formatted metrics |
+| `/config` | `GET` | Current server config |
+| `/rotate-key-secret` | `GET` | Get the secret for rotating the API key |
+| `/rotate-key` | `POST` | Rotate the API key (requires `x-linky-admin` header) |
+| `/devices` | `GET` | List all HomeKit devices |
+| `/device/:id` | `GET` | Get state of specific device |
+| `/device/:id/on` | `POST` | Turn a device ON |
+| `/device/:id/off` | `POST` | Turn a device OFF |
+| `/device/:id/set` | `POST` | Set a specific characteristic |
 
 ---
 
-## 📚 API Endpoints
+## Authentication
 
-| Method | URL | Purpose |
-|:-------|:----|:--------|
-| `GET` | `/` | Welcome message and uptime |
-| `GET` | `/healthz` | Health check status |
-| `GET` | `/metrics` | Prometheus format server metrics |
-| `GET` | `/config` | Basic server configuration info |
-| `GET` | `/devices` | List all devices |
-| `GET` | `/device/:id` | Get device state |
-| `POST` | `/device/:id/on` | Turn device ON |
-| `POST` | `/device/:id/off` | Turn device OFF |
-| `POST` | `/device/:id/set` | Set a device characteristic |
-| `GET` | `/rotate-key-secret` | Retrieve the admin rotate key secret |
-| `POST` | `/rotate-key` | Rotate the API key dynamically |
+- All normal API requests require a valid `x-linky-key` header.
+- API keys can be rotated at runtime securely via the `/rotate-key` endpoint.
 
 ---
 
-## 📦 Example API Usage
+## Metrics
 
-### List Devices
+Exposes a Prometheus-friendly `/metrics` endpoint:
+
+| Metric | Description |
+|:-------|:------------|
+| `linky_uptime_seconds` | Server uptime |
+| `linky_device_count` | Total registered devices |
+| `linky_device_reachable_count` | Currently reachable devices |
+| `linky_memory_heap_total_bytes` | Node.js heap memory total |
+| `linky_memory_heap_used_bytes` | Node.js heap memory used |
+| `linky_cpu_load_average_1m/5m/15m` | CPU load averages |
+
+---
+
+## Contributing & Release Process
+
+Linky uses a fully automated release pipeline powered by GitHub Actions:
+
+- Every push to the `main` branch triggers:
+  - `npm version minor` bump (e.g., v0.2.0 → v0.3.0)
+  - Builds and publishes a new version to NPM
+  - Generates GitHub Release Notes automatically using ChatGPT (if available)
+  - Creates a new GitHub Release with the generated notes
+  - Cleans up version bumps after publish, even on failure
+
+Pre-commit hooks (powered by Husky) automatically run:
+
+- Code formatting via Prettier
+- Linting via ESLint
+- TypeScript compilation
+- Build script validation
+
+> 💬 If your OpenAI API quota is exceeded, Linky falls back to static release notes ("Minor improvements and bug fixes.") to ensure uninterrupted publishing.
+
+### Requirements
+
+- GitHub Secrets:
+  - `NPM_TOKEN` — for publishing to NPM.
+  - `OPENAI_API_KEY` — (optional) for generating smarter release notes.
+
+---
+
+## Manual Publishing (Optional)
+
+If needed, you can manually trigger a build and publish:
 
 ```bash
-curl -H "x-linky-key: <your-api-key>" http://localhost:8581/devices
+npm run build
+npm version minor
+npm publish
 ```
 
-### Turn a device ON
-
-```bash
-curl -X POST -H "x-linky-key: <your-api-key>" http://localhost:8581/device/<device-id>/on
-```
-
-### Set device brightness
-
-```bash
-curl -X POST -H "x-linky-key: <your-api-key>" -H "Content-Type: application/json" \
-  -d '{"characteristic": "Brightness", "value": 75}' \
-  http://localhost:8581/device/<device-id>/set
-```
-
-### Rotate API Key (admin)
-
-```bash
-curl -X POST -H "x-linky-admin: <rotate-key-secret>" http://localhost:8581/rotate-key
-```
+✅ Otherwise, everything happens automatically when you push to `main`!
 
 ---
 
-## 🛡 Security Best Practices
+## License
 
-- **Keep your API key secret** — use HTTPS for production deployments.
-- **Rotate your API key** periodically using the `/rotate-key` endpoint.
-- **Use strong randomly generated keys** (Linky will generate one automatically if missing).
-
----
-
-## 📈 Metrics Available
-
-Exposed via `/metrics` in Prometheus format:
-
-- `linky_uptime_seconds`
-- `linky_device_count`
-- `linky_device_reachable_count`
-- `linky_memory_heap_total_bytes`
-- `linky_memory_heap_used_bytes`
-- `linky_cpu_load_average_1m`
-- `linky_cpu_load_average_5m`
-- `linky_cpu_load_average_15m`
-
----
-
-## 🛤 Roadmap
-
-- [x] Device listing and control
-- [x] API key authentication and rotation
-- [x] Health check and metrics
-- [ ] Real-time WebSocket push notifications
-- [ ] Bulk device state updates
-- [ ] OAuth2 integration for secure external access
-- [ ] Homebridge UI control panel plugin (stretch goal)
-
----
-
-## 🖋 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-Feel free to open issues, submit pull requests, or suggest features.
-
----
-
-## 📬 Contact
-
-Find me on GitHub: [@oorrwullie](https://github.com/oorrwullie)
-
----
+MIT © 2025 [oorrwullie](https://github.com/oorrwullie)
