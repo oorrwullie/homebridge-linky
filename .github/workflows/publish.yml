@@ -57,3 +57,8 @@ jobs:
           tag_name: v${{ env.VERSION }}
           name: v${{ env.VERSION }}
           body_path: RELEASE_NOTES.md
+
+      - name: Cleanup version bump if needed
+        if: always()
+        run: |
+          git restore package.json package-lock.json
