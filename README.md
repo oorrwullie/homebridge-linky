@@ -1,184 +1,173 @@
 # Linky
 
-[![npm version](https://img.shields.io/npm/v/homebridge-linky.svg)](https://www.npmjs.com/package/homebridge-linky)
-[![homebridge verified](https://badgen.net/badge/homebridge/verified/green)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Homebridge](https://img.shields.io/badge/homebridge-plugin-blueviolet)
+![npm](https://img.shields.io/npm/v/homebridge-linky)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-A simple, fast, secure API server to control HomeKit devices remotely via Homebridge.
+Linky is a simple, fast, and secure API server for controlling HomeKit devices remotely via Homebridge.
 
-Built for minimal overhead, full observability, and dynamic secure API access.
-
----
-
-## 📚 Table of Contents
-
-- [Features](#-features)
-- [Installation](#-installation)
-- [Usage](#-usage)
-  - [General API Endpoints](#general-api-endpoints)
-  - [Device Control Endpoints](#device-control-endpoints)
-  - [Admin/Key Management Endpoints](#adminkey-management-endpoints)
-- [Security](#-security)
-- [Development](#-development)
-- [Roadmap](#-roadmap)
-- [License](#-license)
-- [Contributing](#️-contributing)
+Built with performance and safety in mind, Linky exposes a lightweight REST API with dynamic key rotation, device state monitoring, metrics, and future WebSocket support.
 
 ---
 
 ## ✨ Features
 
-- List, control, and monitor HomeKit devices over REST API
-- Secure authentication with API keys
-- Dynamic API key rotation
-- Built-in `/healthz`, `/metrics`, and `/config` endpoints
-- Full Prometheus-compatible metrics
-- Future-ready for WebSocket real-time events
+- Full device listing and state reporting
+- Device control (on/off/set characteristics)
+- REST API secured by an API key
+- Dynamic API key rotation via Homebridge UI
+- Health checks and Prometheus-compatible metrics
+- Fastify server optimized for embedded use
+- Future WebSocket support planned
+- Built with TypeScript and modern tooling
 
 ---
 
-## 📦 Installation
+## 🚀 Installation
 
-Install via Homebridge UI, or manually:
+Install Linky alongside your existing Homebridge setup.
 
 ```bash
 npm install -g homebridge-linky
 ```
 
-Add to your Homebridge `config.json`:
+Add Linky to your Homebridge config:
 
 ```json
 {
   "platforms": [
     {
       "platform": "Linky",
-      "port": 8081,
-      "apiKey": "your-secure-api-key-here"
+      "name": "Linky",
+      "apiKey": "<your-secure-api-key>",
+      "port": 8581
     }
   ]
 }
 ```
 
+**Notes:**
+- If no `apiKey` is specified, Linky will generate a random secure key on startup.
+- API access is secured using the API key provided in HTTP headers.
+
 ---
 
-## 🚀 Usage
+## 🔒 Authentication
 
-After installation and Homebridge restart:
-
-- API available at: `http://<your-homebridge-ip>:8081`
-- Authenticate all requests with header:
+All API requests must include:
 
 ```http
-x-api-key: YOUR_API_KEY
+x-linky-key: <your-api-key>
 ```
 
----
+For admin actions like rotating the API key, use:
 
-### General API Endpoints
+```http
+x-linky-admin: <rotate-key-secret>
+```
 
-| Method | Path | Description |
-|:------|:----|:------------|
-| `GET` | `/` | Welcome/info |
-| `GET` | `/healthz` | Health check |
-| `GET` | `/metrics` | Prometheus metrics |
-| `GET` | `/config` | Current configuration info |
+Rotate-key-secret is auto-generated and retrievable from `/rotate-key-secret`.
 
 ---
 
-### Device Control Endpoints
+## 📚 API Endpoints
 
-| Method | Path | Description |
-|:------|:----|:------------|
-| `GET` | `/devices` | List all HomeKit devices |
-| `GET` | `/device/:id` | Get a specific device's state |
-| `POST` | `/device/:id/on` | Turn a device ON |
-| `POST` | `/device/:id/off` | Turn a device OFF |
-| `POST` | `/device/:id/set` | Set a specific device characteristic |
-
----
-
-### Admin/Key Management Endpoints
-
-| Method | Path | Description |
-|:------|:----|:------------|
-| `GET` | `/rotate-key-secret` | Retrieve the current rotate-key secret (internal use) |
-| `POST` | `/rotate-key` | Rotate the API key (requires admin header) |
+| Method | URL | Purpose |
+|:-------|:----|:--------|
+| `GET` | `/` | Welcome message and uptime |
+| `GET` | `/healthz` | Health check status |
+| `GET` | `/metrics` | Prometheus format server metrics |
+| `GET` | `/config` | Basic server configuration info |
+| `GET` | `/devices` | List all devices |
+| `GET` | `/device/:id` | Get device state |
+| `POST` | `/device/:id/on` | Turn device ON |
+| `POST` | `/device/:id/off` | Turn device OFF |
+| `POST` | `/device/:id/set` | Set a device characteristic |
+| `GET` | `/rotate-key-secret` | Retrieve the admin rotate key secret |
+| `POST` | `/rotate-key` | Rotate the API key dynamically |
 
 ---
 
-### Example: List Devices
+## 📦 Example API Usage
+
+### List Devices
 
 ```bash
-curl -X GET http://localhost:8081/devices -H "x-api-key: YOUR_API_KEY"
+curl -H "x-linky-key: <your-api-key>" http://localhost:8581/devices
+```
+
+### Turn a device ON
+
+```bash
+curl -X POST -H "x-linky-key: <your-api-key>" http://localhost:8581/device/<device-id>/on
+```
+
+### Set device brightness
+
+```bash
+curl -X POST -H "x-linky-key: <your-api-key>" -H "Content-Type: application/json" \
+  -d '{"characteristic": "Brightness", "value": 75}' \
+  http://localhost:8581/device/<device-id>/set
+```
+
+### Rotate API Key (admin)
+
+```bash
+curl -X POST -H "x-linky-admin: <rotate-key-secret>" http://localhost:8581/rotate-key
 ```
 
 ---
 
-## 🔒 Security
+## 🛡 Security Best Practices
 
-- All API calls require a secure, random API key
-- API key can be rotated at runtime without restarting Homebridge
-- `/rotate-key` protected by a dynamic secret known only at runtime
-- Rate limiting built-in to prevent abuse
-
----
-
-## 🛠 Development
-
-Clone repo:
-
-```bash
-git clone https://github.com/yourname/homebridge-linky.git
-cd homebridge-linky
-npm install
-```
-
-Build the project:
-
-```bash
-npm run build
-```
-
-Run for development:
-
-```bash
-npm run dev
-```
-
-Lint code:
-
-```bash
-npm run lint
-```
-
-Auto-fix lint issues:
-
-```bash
-npm run lint:fix
-```
+- **Keep your API key secret** — use HTTPS for production deployments.
+- **Rotate your API key** periodically using the `/rotate-key` endpoint.
+- **Use strong randomly generated keys** (Linky will generate one automatically if missing).
 
 ---
 
-## 🗺️ Future Roadmap
+## 📈 Metrics Available
 
-- 🔥 Add WebSocket real-time device update support
-- 📲 Add optional push notifications for device events
-- 🛡️ Allow per-device fine-grained API permissions
-- 📝 Add automatic device status history logging
-- 📊 Add `/stats` endpoint with more detailed usage analytics
-- 🖥️ Build a simple web dashboard frontend for managing devices
-- 🧠 Explore HomeKit automations integration (v2.0+)
+Exposed via `/metrics` in Prometheus format:
+
+- `linky_uptime_seconds`
+- `linky_device_count`
+- `linky_device_reachable_count`
+- `linky_memory_heap_total_bytes`
+- `linky_memory_heap_used_bytes`
+- `linky_cpu_load_average_1m`
+- `linky_cpu_load_average_5m`
+- `linky_cpu_load_average_15m`
 
 ---
 
-## 📜 License
+## 🛤 Roadmap
+
+- [x] Device listing and control
+- [x] API key authentication and rotation
+- [x] Health check and metrics
+- [ ] Real-time WebSocket push notifications
+- [ ] Bulk device state updates
+- [ ] OAuth2 integration for secure external access
+- [ ] Homebridge UI control panel plugin (stretch goal)
+
+---
+
+## 🖋 License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## ❤️ Contributing
+## 🤝 Contributing
 
-PRs, feature requests, and suggestions are welcome!
+Contributions are welcome!
+Feel free to open issues, submit pull requests, or suggest features.
+
+---
+
+## 📬 Contact
+
+Find me on GitHub: [@oorrwullie](https://github.com/oorrwullie)
 
 ---
