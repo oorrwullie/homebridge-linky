@@ -8,6 +8,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
+    "build:scripts": "tsc scripts/generate-release-notes.ts --outDir dist/scripts",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
@@ -63,9 +64,11 @@
     "homebridge": "1.6.1",
     "husky": "^8.0.0",
     "lint-staged": "15.5.1",
+    "openai": "4.96.0",
     "patch-package": "8.0.0",
     "postinstall-postinstall": "2.1.0",
     "prettier": "3.5.3",
+    "simple-git": "3.27.0",
     "typescript": "^5.3.3",
     "typescript-eslint": "8.31.0"
   }
