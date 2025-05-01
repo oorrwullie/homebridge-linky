@@ -1,53 +1,32 @@
 {
   "pluginAlias": "Linky",
   "pluginType": "platform",
-  "singular": true,
-  "headerDisplay": "Manage Linky API Server",
   "schema": {
     "type": "object",
+    "required": ["platform"],
     "properties": {
+      "platform": {
+        "type": "string",
+        "const": "Linky",
+        "description": "The name of the platform."
+      },
       "port": {
-        "title": "API Server Port",
         "type": "number",
+        "title": "API Server Port",
         "default": 8081,
-        "minimum": 1,
-        "maximum": 65535
+        "description": "The local port the Linky API will run on."
       },
       "apiKey": {
-        "title": "API Key",
         "type": "string",
-        "description": "This key is required to authenticate API requests. Keep it secret!",
-        "minLength": 32
-      }
-    },
-    "required": ["port", "apiKey"]
-  },
-  "layout": [
-    {
-      "type": "flex",
-      "flex-flow": "row wrap",
-      "items": [
-        "port",
-        "apiKey"
-      ]
-    },
-    {
-      "type": "button",
-      "title": "Regenerate API Key",
-      "description": "Generate a new random API Key. You must update all clients after rotation!",
-      "action": {
-        "method": "POST",
-        "url": "/rotate-key",
-        "headers": {
-          "x-linky-admin": "rotate-key-secret"
-        },
-        "successMessage": "API key rotated successfully. Please save the config!",
-        "errorMessage": "Failed to rotate API key."
+        "title": "API Key",
+        "description": "Used to authenticate API requests. If empty, one is generated automatically and saved."
       },
-      "confirm": {
-        "title": "Rotate API Key?",
-        "description": "This will immediately require all clients to update to a new API key."
+      "uiPort": {
+        "type": "number",
+        "title": "Homebridge UI Port",
+        "default": 8581,
+        "description": "Used to talk to the Homebridge config editor API."
       }
     }
-  ]
+  }
 }
