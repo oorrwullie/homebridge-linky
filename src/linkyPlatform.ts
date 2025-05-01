@@ -71,6 +71,7 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
 
   private async saveApiKeyToConfig(newKey: string): Promise<void> {
     const base = `http://localhost:${this.uiPort}`;
+
     try {
       // 1) Login to Config UI X and retrieve Bearer token
       const loginRes = await axios.post(`${base}/api/auth/login`, {
@@ -92,8 +93,25 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
       );
 
       this.log.info('Saved new API key to Homebridge config.');
-    } catch (error) {
-      this.log.error('Failed to auto-save API key to Homebridge config', error as Error);
+    } catch (error: unknown) {
+      // Specific handling for forbidden login due to bad UI credentials
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        this.log.error(
+          'Config UI login failed (403 Forbidden). ' +
+            'Please verify `uiUsername`/`uiPassword` in your Linky config match your Config UI X credentials, ' +
+            'or reset to defaults by deleting auth.json.'
+        );
+        return;
+      }
+      // Other errors
+      if (error instanceof Error) {
+        this.log.error('Failed to auto-save API key to Homebridge config', error);
+      } else {
+        this.log.error(
+          'Failed to auto-save API key to Homebridge config',
+          new Error(String(error))
+        );
+      }
     }
   }
 
