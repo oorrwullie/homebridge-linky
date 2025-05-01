@@ -69,9 +69,8 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
   async saveApiKeyToConfig(newKey: string) {
     try {
       await axios.put(
-        `http://localhost:${this.uiPort}/api/config-editor/save`,
+        `http://localhost:${this.uiPort}/api/config-editor/plugin/homebridge-linky`,
         {
-          platform: 'Linky',
           key: 'apiKey',
           value: newKey,
         },
