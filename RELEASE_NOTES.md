@@ -1,15 +1,11 @@
-# v0.8.0 - New Release 🚀
+# v0.9.0 - Further Enhancements 🚀
 
-We're excited to announce the release of version 0.8.0! This update includes improvements to our publishing workflow and other internal enhancements. Here are the details:
+Welcome to version 0.9.0 of our project. This version brings with it a number of improvements and enhancements that are set to improve the overall user experience. Here's what's new:
 
 ## Internal Improvements
+- We've updated our publish workflow to use Personal Access Tokens (PAT) in order to fix push permissions. This is a significant step towards enhancing the security of our project and ensuring that we maintain the integrity of our codebase.
 
-- **Updated Publish Workflow**: We've updated our publish workflow to use Personal Access Tokens (PAT) and fixed push permissions. This will help streamline our release process and ensure that we can continue to deliver updates efficiently. 
+## Miscellaneous
+- We've been working hard behind the scenes and have made several version bumps in our journey towards this release. These include bumps to version 0.8.0 and 0.7.1. These version updates were necessary to facilitate the introduction of new features and improvements.
 
-Please note that these changes are part of our ongoing efforts to improve our internal processes and won't have a direct impact on end-users.
-
-## Other Updates
-
-- We've also merged several pull requests that include minor improvements. These changes contribute to the overall stability and performance of our software.
-
-We appreciate your continued support and feedback. Enjoy the new update!
+As always, we're grateful for the community's support and feedback. We're looking forward to hearing your thoughts on this new release. Happy coding!
