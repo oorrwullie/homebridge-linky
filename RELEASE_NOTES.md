@@ -1,10 +1,15 @@
-# v0.7.1 - Minor Improvements 🚀
+# v0.8.0 - New Release 🚀
 
-This release includes a series of CI and workflow improvements to streamline our processes and enhance our project's performance. There are no user-facing changes in this version.
+We're excited to announce the release of version 0.8.0! This update includes improvements to our publishing workflow and other internal enhancements. Here are the details:
 
 ## Internal Improvements
 
-- **Publish Workflow Updates:** We've made several modifications to our publish workflow. These changes include using Personal Access Tokens (PAT) to fix push permissions and ensuring the workflow only runs after successful CI on the main branch. This helps us maintain a high level of code quality and stability.
-- **Fallback Mechanisms:** We've added fallback mechanisms for both tags and release notes within our publish.yml. This ensures our publishing process remains smooth and uninterrupted, even if unexpected issues arise.
+- **Updated Publish Workflow**: We've updated our publish workflow to use Personal Access Tokens (PAT) and fixed push permissions. This will help streamline our release process and ensure that we can continue to deliver updates efficiently. 
 
-As always, we appreciate the contributions from our community and encourage you to continue helping us improve this project.
+Please note that these changes are part of our ongoing efforts to improve our internal processes and won't have a direct impact on end-users.
+
+## Other Updates
+
+- We've also merged several pull requests that include minor improvements. These changes contribute to the overall stability and performance of our software.
+
+We appreciate your continued support and feedback. Enjoy the new update!
