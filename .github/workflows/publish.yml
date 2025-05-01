@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # needed to access full Git history and tags
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,9 +41,6 @@ jobs:
       - name: Auto bump version
         id: version
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
           VERSION=$(npm version minor --no-git-tag-version)
           VERSION=${VERSION#v}
           TAG="v$VERSION"
@@ -82,11 +79,10 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_ADMIN_TOKEN }}
           commit-message: "chore: bump version to ${{ env.VERSION }} 🚀"
           title: "chore: release v${{ env.VERSION }} 🚀"
           body-path: RELEASE_NOTES.md
           branch: release/v${{ env.VERSION }}
           base: main
           delete-branch: true
-
