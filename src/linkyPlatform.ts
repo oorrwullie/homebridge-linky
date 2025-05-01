@@ -9,6 +9,7 @@ import crypto from 'crypto';
 export class LinkyPlatform implements DynamicPlatformPlugin {
   private readonly api: API;
   readonly config: PlatformConfig;
+  readonly uiPort: number;
   private readonly log: ReturnType<typeof wrapLogger>;
   private apiKey: string;
   private rotateKeySecret: string;
@@ -17,12 +18,14 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     this.log = wrapLogger(log);
     this.config = config;
     this.api = api;
+    this.uiPort = config.uiPort || 8581;
 
     this.apiKey = config.apiKey || generateApiKey();
     this.rotateKeySecret = this.generateRotateKeySecret();
 
     if (!config.apiKey) {
       this.log.warn('No API key set. Generated random secure key.');
+      this.saveApiKeyToConfig(this.apiKey);
     }
 
     this.api.on('didFinishLaunching', () => {
@@ -36,14 +39,14 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
           getRotateKeySecret: this.getRotateKeySecret.bind(this),
           rotateApiKey: this.rotateApiKey.bind(this),
         },
-        log as unknown as Logging, // ✅ Cast Logger to Logging
+        log as unknown as Logging,
         this.config.port || 8081
       );
     });
   }
 
   generateRotateKeySecret(): string {
-    return crypto.randomBytes(32).toString('hex'); // 64-character secure random hex
+    return crypto.randomBytes(32).toString('hex');
   }
 
   getApiKey(): string {
@@ -66,7 +69,7 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
   async saveApiKeyToConfig(newKey: string) {
     try {
       await axios.put(
-        'http://localhost:8581/api/config-editor/save',
+        `http://localhost:${this.uiPort}/api/config-editor/save`,
         {
           platform: 'Linky',
           key: 'apiKey',
@@ -85,6 +88,6 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
   }
 
   configureAccessory() {
-    // No-op for Homebridge
+    // No-op
   }
 }

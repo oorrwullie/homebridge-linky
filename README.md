@@ -73,6 +73,17 @@ x-linky-key: YOUR_API_KEY
 
 ---
 
+## 🧠 Auto-Generated API Key Support
+
+If `apiKey` is omitted from the config, Linky will:
+- Automatically generate a secure API key
+- Persist it to Homebridge config using the Homebridge UI API (default port: `8581`)
+- Log a warning in the console with a message about key generation
+
+To override this behavior:
+- Provide your own `apiKey` in the config
+- Or change the `uiPort` in config if your UI runs on a different port
+
 ## Authentication
 
 - All normal API requests require a valid `x-linky-key` header.
