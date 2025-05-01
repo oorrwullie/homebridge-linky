@@ -1,6 +1,6 @@
 {
   "name": "homebridge-linky",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "displayName": "Homebridge API Linky",
   "description": "A Homebridge plugin to remotely list and control your HomeKit devices over the internet via a secure API key.",
   "main": "dist/index.js",
