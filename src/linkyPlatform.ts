@@ -10,29 +10,33 @@ import axios from 'axios';
 import crypto from 'crypto';
 import { startServer } from './server';
 import { wrapLogger } from './utils/logger';
-import { initializeDevices } from './utils/deviceManager';
-import { registerAccessory } from './utils/deviceManager';
+import { initializeDevices, registerAccessory } from './utils/deviceManager';
 import { generateApiKey } from './utils/auth';
 import { name as pluginName } from '../package.json';
+import type { LinkyPlatformContext } from './types';
 
-export class LinkyPlatform implements DynamicPlatformPlugin {
+export class LinkyPlatform implements DynamicPlatformPlugin, LinkyPlatformContext {
+  public readonly config: PlatformConfig;
+  public readonly accessories: PlatformAccessory[] = [];
+
   private readonly api: API;
   private readonly log: ReturnType<typeof wrapLogger>;
   private readonly uiPort: number;
   private readonly uiUsername: string;
   private readonly uiPassword: string;
-  private readonly accessories: PlatformAccessory[] = [];
   private apiKey: string;
   private readonly rotateKeySecret: string;
 
   constructor(log: Logger, config: PlatformConfig, api: API) {
     this.log = wrapLogger(log);
     this.api = api;
-    this.uiPort = (config.uiPort as number) ?? 8581;
-    this.uiUsername = (config.uiUsername as string) ?? 'admin';
-    this.uiPassword = (config.uiPassword as string) ?? 'admin';
+    this.config = config;
 
-    this.apiKey = (config.apiKey as string) ?? generateApiKey();
+    this.uiPort = config.uiPort ?? 8581;
+    this.uiUsername = config.uiUsername ?? 'admin';
+    this.uiPassword = config.uiPassword ?? 'admin';
+
+    this.apiKey = config.apiKey ?? generateApiKey();
     this.rotateKeySecret = this.generateRotateKeySecret();
 
     if (!config.apiKey) {
@@ -43,24 +47,18 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     this.api.on('didFinishLaunching', () => {
       this.log.info('Linky Plugin finished launching');
 
-      initializeDevices({
-        config: { port: this.uiPort },
-        getApiKey: this.getApiKey.bind(this),
-        getRotateKeySecret: this.getRotateKeySecret.bind(this),
-        rotateApiKey: this.rotateApiKey.bind(this),
-        accessories: this.accessories,
-      });
+      initializeDevices(this);
 
       startServer(
         {
-          config: { port: this.uiPort },
+          config: this.config,
+          accessories: this.accessories,
           getApiKey: this.getApiKey.bind(this),
           getRotateKeySecret: this.getRotateKeySecret.bind(this),
           rotateApiKey: this.rotateApiKey.bind(this),
-          accessories: this.accessories,
         },
         log as unknown as Logging,
-        this.uiPort ?? 8081
+        this.config.port ?? 8081
       );
     });
   }
@@ -117,6 +115,7 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
         );
         return;
       }
+
       if (error instanceof Error) {
         this.log.error('Failed to auto-save API key to Homebridge config', error);
       } else {
