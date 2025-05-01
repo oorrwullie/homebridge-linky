@@ -1,13 +1,6 @@
-import {
-  API,
-  PlatformAccessory,
-  Service,
-  Characteristic,
-  Perms,
-  CharacteristicValue,
-} from 'homebridge';
+import { PlatformAccessory, Service, Characteristic, Perms, CharacteristicValue } from 'homebridge';
 import { DeviceError } from './error';
-import { DeviceStateRecord } from '../types';
+import { DeviceStateRecord, LinkyPlatformContext } from '../types';
 
 const CATEGORY_MAP: { [key: number]: string } = {
   1: 'Other',
@@ -25,9 +18,15 @@ const CONTROLLABLE_CHARACTERISTICS = ['On', 'Brightness', 'TargetTemperature', '
 const accessories: PlatformAccessory[] = [];
 const deviceState: DeviceStateRecord = {};
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function initializeDevices(_api: API) {
-  // No-op for now
+export function initializeDevices(platform: LinkyPlatformContext) {
+  const platformAccessories = platform.accessories || [];
+
+  console.log(`[Linky] Initializing devices. Found ${platformAccessories.length} accessories.`);
+
+  for (const accessory of platformAccessories) {
+    console.log(`[Linky] Found accessory: ${accessory.displayName} (${accessory.UUID})`);
+    accessories.push(accessory);
+  }
 }
 
 export function listDevices() {
@@ -99,4 +98,8 @@ export async function setDeviceState(deviceId: string, characteristicName: strin
     }
   }
   throw new DeviceError(`Characteristic ${characteristicName} not found`, 'invalid_request');
+}
+
+export function registerAccessory(accessory: PlatformAccessory) {
+  accessories.push(accessory);
 }
