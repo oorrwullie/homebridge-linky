@@ -31,9 +31,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.email "payneks@gmail.com"
-          git config --global user.name "oorrwullie"
-          git remote set-url origin https://x-access-token:${{ secrets.GH_ADMIN_TOKEN }}@github.com/${{ github.repository }}
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: npm ci
