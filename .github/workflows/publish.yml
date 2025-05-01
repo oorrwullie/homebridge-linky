@@ -32,27 +32,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Auto bump version
+      - name: Auto bump version (patch-first fallback)
         id: bump
         run: |
-          VERSION=$(npm version minor --no-git-tag-version)
-          VERSION=${VERSION#v}
-          TAG="v$VERSION"
+          VERSION=""
+          MAX_TRIES=5
+          TRIES=0
 
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
+          while [ $TRIES -lt $MAX_TRIES ]; do
             VERSION=$(npm version patch --no-git-tag-version)
             VERSION=${VERSION#v}
             TAG="v$VERSION"
+
+            if git rev-parse "$TAG" >/dev/null 2>&1 || npm view homebridge-linky versions | grep -q "$VERSION"; then
+              echo "⚠️ Version $VERSION already exists, trying next patch..."
+              TRIES=$((TRIES+1))
+              continue
+            else
+              break
+            fi
+          done
+
+          if [ $TRIES -eq $MAX_TRIES ]; then
+            echo "❌ Failed to find a new unique patch version after $MAX_TRIES attempts."
+            exit 1
           fi
 
+          echo "✅ Using version $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "TAG=v$VERSION" >> $GITHUB_ENV
 
           git add package*.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
-          git tag "$TAG"
+          git tag "v$VERSION"
           git push origin main
-          git push origin "$TAG"
+          git push origin "v$VERSION"
 
       - name: Build project
         run: npm run build
