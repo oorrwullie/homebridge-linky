@@ -17,7 +17,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
 
-    steps:
+    teps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -39,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: Auto bump version
-        id: version
+        id: bump
         run: |
           VERSION=$(npm version minor --no-git-tag-version)
           VERSION=${VERSION#v}
@@ -56,6 +56,8 @@ jobs:
 
           git add package*.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
+          git tag "$TAG"
+          git push origin main --tags
 
       - name: Build project
         run: npm run build
@@ -76,13 +78,14 @@ jobs:
             echo "📋 Minor improvements and bug fixes." > RELEASE_NOTES.md
           fi
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GH_ADMIN_TOKEN }}
-          commit-message: "chore: bump version to ${{ env.VERSION }} 🚀"
-          title: "chore: release v${{ env.VERSION }} 🚀"
-          body-path: RELEASE_NOTES.md
-          branch: release/v${{ env.VERSION }}
-          base: main
-          delete-branch: true
+          tag_name: ${{ env.TAG }}
+          name: v${{ env.VERSION }}
+          body_path: RELEASE_NOTES.md
