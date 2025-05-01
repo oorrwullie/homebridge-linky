@@ -5,11 +5,6 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  packages: write
-  id-token: write
-
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed to access full Git history and tags
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,41 +24,57 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump patch version safely
-        id: version_bump
+      - name: Auto bump version
+        id: version
         run: |
-          git fetch --tags
-          LATEST_TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
-          echo "Latest tag: $LATEST_TAG"
-          VERSION=$(npm version patch --no-git-tag-version)
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+          VERSION=$(npm version minor --no-git-tag-version)
           VERSION=${VERSION#v}
+          TAG="v$VERSION"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            VERSION=$(npm version patch --no-git-tag-version)
+            VERSION=${VERSION#v}
+            TAG="v$VERSION"
+          fi
+
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add package.json package-lock.json
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+          git add package*.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
+          git tag "$TAG" || echo "Tag $TAG already exists"
+          git push origin main --tags
 
-      - name: Push new version tag
-        run: |
-          git tag "v${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+      - name: Build project
+        run: npm run build
 
-      - name: Build scripts
+      - name: Build release script
         run: npm run build:scripts
 
-      - name: Generate Release Notes using ChatGPT
-        run: node dist/scripts/generate-release-notes.js
+      - name: Generate release notes with ChatGPT
+        run: |
+          node dist/scripts/generate-release-notes.js \
+            || echo "📋 Minor improvements and bug fixes." > RELEASE_NOTES.md
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Ensure release notes exist
+        run: |
+          if [ ! -f RELEASE_NOTES.md ]; then
+            echo "📋 Minor improvements and bug fixes." > RELEASE_NOTES.md
+          fi
 
       - name: Publish to NPM
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub Release with ChatGPT Notes
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
+          tag_name: ${{ env.TAG }}
           name: v${{ env.VERSION }}
           body_path: RELEASE_NOTES.md
