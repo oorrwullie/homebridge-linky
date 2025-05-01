@@ -1,13 +1,12 @@
-import type { PlatformAccessory } from 'homebridge';
+import type { PlatformAccessory, PlatformConfig } from 'homebridge';
 
 export interface LinkyPlatformContext {
-  config: {
-    port?: number;
-  };
+  config: PlatformConfig;
   accessories: PlatformAccessory[];
-  getApiKey: () => string;
-  getRotateKeySecret: () => string;
-  rotateApiKey: () => Promise<string>;
+
+  getApiKey(): string;
+  getRotateKeySecret(): string;
+  rotateApiKey(): Promise<string>;
 }
 
 export interface DeviceStateRecord {
