@@ -27,6 +27,18 @@
         "title": "Homebridge UI Port",
         "default": 8581,
         "description": "Used to talk to the Homebridge config editor API."
+      },
+      "uiUsername": {
+        "type": "string",
+        "title": "Config UI Username",
+        "default": "admin",
+        "description": "Username for Homebridge Config UI X."
+      },
+      "uiPassword": {
+        "type": "string",
+        "title": "Config UI Password",
+        "default": "admin",
+        "description": "Password for Homebridge Config UI X."
       }
     }
   }
