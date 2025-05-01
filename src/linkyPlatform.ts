@@ -1,26 +1,29 @@
 import { API, DynamicPlatformPlugin, Logger, Logging, PlatformConfig } from 'homebridge';
+import axios from 'axios';
+import crypto from 'crypto';
 import { startServer } from './server';
 import { wrapLogger } from './utils/logger';
 import { initializeDevices } from './utils/deviceManager';
 import { generateApiKey } from './utils/auth';
-import axios from 'axios';
-import crypto from 'crypto';
+import { name as pluginName } from '../package.json';
 
 export class LinkyPlatform implements DynamicPlatformPlugin {
   private readonly api: API;
-  readonly config: PlatformConfig;
-  readonly uiPort: number;
   private readonly log: ReturnType<typeof wrapLogger>;
+  private readonly uiPort: number;
+  private readonly uiUsername: string;
+  private readonly uiPassword: string;
   private apiKey: string;
-  private rotateKeySecret: string;
+  private readonly rotateKeySecret: string;
 
   constructor(log: Logger, config: PlatformConfig, api: API) {
     this.log = wrapLogger(log);
-    this.config = config;
     this.api = api;
-    this.uiPort = config.uiPort || 8581;
+    this.uiPort = (config.uiPort as number) ?? 8581;
+    this.uiUsername = (config.uiUsername as string) ?? 'admin';
+    this.uiPassword = (config.uiPassword as string) ?? 'admin';
 
-    this.apiKey = config.apiKey || generateApiKey();
+    this.apiKey = (config.apiKey as string) ?? generateApiKey();
     this.rotateKeySecret = this.generateRotateKeySecret();
 
     if (!config.apiKey) {
@@ -34,18 +37,18 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
 
       startServer(
         {
-          config: { port: this.config.port },
+          config: { port: config.port as number },
           getApiKey: this.getApiKey.bind(this),
           getRotateKeySecret: this.getRotateKeySecret.bind(this),
           rotateApiKey: this.rotateApiKey.bind(this),
         },
         log as unknown as Logging,
-        this.config.port || 8081
+        (config.port as number) ?? 8081
       );
     });
   }
 
-  generateRotateKeySecret(): string {
+  private generateRotateKeySecret(): string {
     return crypto.randomBytes(32).toString('hex');
   }
 
@@ -66,23 +69,31 @@ export class LinkyPlatform implements DynamicPlatformPlugin {
     return newKey;
   }
 
-  async saveApiKeyToConfig(newKey: string) {
+  private async saveApiKeyToConfig(newKey: string): Promise<void> {
+    const base = `http://localhost:${this.uiPort}`;
     try {
+      // 1) Login to Config UI X and retrieve Bearer token
+      const loginRes = await axios.post(`${base}/api/auth/login`, {
+        username: this.uiUsername,
+        password: this.uiPassword,
+      });
+      const token = loginRes.data.token;
+
+      // 2) Save API key using plugin-scoped endpoint
       await axios.post(
-        `http://localhost:${this.uiPort}/api/config-editor/plugin/homebridge-linky`,
-        {
-          key: 'apiKey',
-          value: newKey,
-        },
+        `${base}/api/config-editor/plugin/${pluginName}`,
+        { key: 'apiKey', value: newKey },
         {
           headers: {
+            Authorization: `Bearer ${token}`,
             'x-hb-control': 'true',
           },
         }
       );
+
       this.log.info('Saved new API key to Homebridge config.');
     } catch (error) {
-      this.log.error('Failed to auto-save API key to Homebridge config', error);
+      this.log.error('Failed to auto-save API key to Homebridge config', error as Error);
     }
   }
 
