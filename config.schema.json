@@ -19,7 +19,8 @@
       "apiKey": {
         "type": "string",
         "title": "API Key",
-        "description": "Used to authenticate API requests. If empty, one is generated automatically and saved."
+        "description": "Used to authenticate API requests. If empty, one is generated automatically and saved.",
+        "default": ""
       },
       "uiPort": {
         "type": "number",
