@@ -51,7 +51,8 @@ jobs:
           git add package*.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
           git tag "$TAG"
-          git push origin main --tags
+          git push origin main
+          git push origin "$TAG"
 
       - name: Build project
         run: npm run build
