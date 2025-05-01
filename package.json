@@ -13,14 +13,7 @@
   ],
   "homebridge": {
     "pluginType": "platform",
-    "platforms": [
-      {
-        "platform": "Linky",
-        "plugin_map": {
-          "plugin_name": "homebridge-linky"
-        }
-      }
-    ]
+    "platformName": "Linky"
   },
   "scripts": {
     "build": "npm run clean && tsc",
@@ -76,6 +69,6 @@
     "*.ts": "eslint --cache --fix"
   },
   "exports": {
-    "./": "./dist/index.js"
+    ".": "./dist/index.js"
   }
 }
