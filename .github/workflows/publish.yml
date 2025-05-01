@@ -32,42 +32,59 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Auto bump version (patch-first, fallback to minor)
+      - name: Auto bump version (skip existing patch & minor)
         id: bump
         run: |
-          VERSION=""
-          TAG=""
           MAX_TRIES=5
           TRIES=0
+          VERSION=""
+          TAG=""
 
-          # Try patch bumps first
-          while [ $TRIES -lt $MAX_TRIES ]; do
-            VERSION=$(npm version patch --no-git-tag-version)
+          bump_and_check() {
+            local bump_type=$1
+            VERSION=$(npm version "$bump_type" --no-git-tag-version)
             VERSION=${VERSION#v}
             TAG="v$VERSION"
+            if git rev-parse "$TAG" >/dev/null 2>&1 \
+              || npm view homebridge-linky versions | grep -q "\"$VERSION\""; then
+              return 1
+            fi
+            return 0
+          }
 
-            if git rev-parse "$TAG" >/dev/null 2>&1 || npm view homebridge-linky versions | grep -q "$VERSION"; then
-              echo "⚠️ Version $VERSION already exists, trying next patch..."
-              TRIES=$((TRIES+1))
-              continue
-            else
+          # Try up to MAX_TRIES patch bumps
+          while [ $TRIES -lt $MAX_TRIES ]; do
+            if bump_and_check patch; then
               break
             fi
+            echo "⚠️ patch $VERSION exists, trying next patch..."
+            TRIES=$((TRIES+1))
           done
 
-          # If we exhausted patch bumps, fall back to a minor bump
+          # If all patch attempts failed, switch to minor bumps
           if [ $TRIES -eq $MAX_TRIES ]; then
-            echo "⚠️ All patch attempts failed, falling back to minor bump..."
-            VERSION=$(npm version minor --no-git-tag-version)
-            VERSION=${VERSION#v}
-            TAG="v$VERSION"
+            echo "⚠️ All patch attempts failed—switching to minor bumps..."
+            TRIES=0
+            while [ $TRIES -lt $MAX_TRIES ]; do
+              if bump_and_check minor; then
+                break
+              fi
+              echo "⚠️ minor $VERSION exists, trying next minor..."
+              TRIES=$((TRIES+1))
+            done
+          fi
+
+          # If still no unique version, fail
+          if [ $TRIES -eq $MAX_TRIES ]; then
+            echo "❌ Unable to find a unique version after $MAX_TRIES attempts."
+            exit 1
           fi
 
           echo "✅ Using version $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAG=$TAG" >> $GITHUB_ENV
 
-          # Commit and push
+          # Commit and push new version + tag
           git add package*.json
           git commit -m "chore: bump version to $VERSION 🚀" || echo "No changes to commit"
           git tag "$TAG"
